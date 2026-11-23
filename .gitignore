@@ -1,0 +1,32 @@
+# local config / secrets
+.env
+*.tfvars
+!*.tfvars.example
+
+# python / uv
+.venv/
+**/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# terraform (state lives in GCS)
+**/.terraform/
+**/.terraform.lock.hcl
+**/*.tfstate
+**/*.tfstate.*
+
+# agents-cli artefacts
+**/deployment_metadata.json
+*-agent/.gcloudignore
+**/.requirements.txt
+**/.google-agents-cli/
+**/.agents-cli-scripts/
+**/.saved_chats
+**/.adk/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/

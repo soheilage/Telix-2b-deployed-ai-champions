@@ -1,0 +1,10 @@
+# Files excluded from `gcloud builds submit` uploads (repo root).
+.git
+.gitignore
+.env
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.terraform
+**/docs
+**/.pytest_cache

@@ -1,0 +1,35 @@
+# Destroys the Terraform-managed infrastructure of one agent.
+# Invoked by scripts/teardown.sh – mirrors the init step of cloudbuild.yaml.
+steps:
+  - id: 'get-agent-id'
+    name: 'python:3.13-slim'
+    dir: '${_AGENT_DIR}'
+    entrypoint: 'python3'
+    args:
+      - '-c'
+      - |
+        import tomllib
+        with open("pyproject.toml", "rb") as f:
+            data = tomllib.load(f)
+        with open("/workspace/agent_id.txt", "w") as out:
+            out.write(data["project"]["name"])
+
+  - id: 'tf-destroy'
+    name: 'hashicorp/terraform:1.15.6'
+    dir: '${_AGENT_DIR}/terraform'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        set -e
+        AGENT_ID=$(cat /workspace/agent_id.txt)
+        terraform init -backend-config="bucket=${_TF_STATE_BUCKET}" -backend-config="prefix=terraform/$$AGENT_ID"
+        terraform destroy -auto-approve -var=project_id=$PROJECT_ID -var=region=${_REGION}
+
+substitutions:
+  _AGENT_DIR: "."
+  _REGION: us-central1
+  _TF_STATE_BUCKET: ""
+
+options:
+  logging: CLOUD_LOGGING_ONLY
