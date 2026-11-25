@@ -58,7 +58,7 @@ scripts/deploy.sh argus          # also syncs Science Skills to Agent Registry
 scripts/verify.sh all --smoke
 ```
 
-Then open **Gemini Enterprise → your app → Agents** — all three agents appear in the gallery.
+A green `verify.sh all --smoke` means each agent answered **through Gemini Enterprise** (the same path as the UI), not just directly. Then open **Gemini Enterprise → your app → Agents** — all three agents appear in the gallery.
 
 ## Prerequisites
 
@@ -82,7 +82,7 @@ scripts/
   bootstrap.sh               # one-time project setup (idempotent)
   deploy.sh <agent>          # Cloud Build: Terraform → agents-cli deploy → GE publish
   deploy_all.sh              # the three agents in sequence
-  verify.sh <agent|all>      # Reasoning Engine + GE registration check, optional --smoke
+  verify.sh <agent|all>      # engine + required env var + GE registration; --smoke calls the agent via GE and Agent Runtime
   sync_science_skills.sh     # Argus prerequisite (Agent Registry skills)
   teardown.sh <agent>        # unregister + terraform destroy
 shared/

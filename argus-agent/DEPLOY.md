@@ -86,8 +86,16 @@ Expected:
 
 ```
 ✔ Reasoning Engine: projects/…/reasoningEngines/… (updated …)
+✔ GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false
 ✔ registered in GE as 'Argus — Life Sciences M&A Diligence'  [ENABLED]
+✔ GE path works: "AGENT OK"        # with --smoke
 ```
+
+`verify.sh` checks four things: the Reasoning Engine exists, the required runtime env var
+(`GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false`) is set, the agent is
+registered in the GE app, and — with `--smoke` — the agent answers **through Gemini Enterprise**
+(same path as the UI) as well as directly through Agent Runtime. A green `--smoke` run means the
+agent will work in the GE UI.
 
 ## Step 6 — Use it in Gemini Enterprise
 
@@ -113,6 +121,7 @@ GE app → **Agents** → *Argus — Life Sciences M&A Diligence*:
 
 | Symptom | Fix |
 | --- | --- |
+| GE UI says *"I couldn't complete this request. If it needs a file, please attach it in the chat."* | GE's generic error wrapper. Run `scripts/verify.sh argus --smoke` — it checks that `GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false` is set on the Reasoning Engine and calls the agent **through Gemini Enterprise**, the same path as the UI. If the env check fails, redeploy with `scripts/deploy.sh argus` (the flag is set by `deploy.sh`, `shared/cloudbuild.yaml` and the Terraform module). Root cause: GE forwards the end-user credential and the model call returns `401 UNAUTHENTICATED` without the flag. |
 | `sync_science_skills.sh`: `gcloud alpha agent-registry … not found` | `gcloud components install alpha` / `gcloud components update`. |
 | Agent says it cannot find skills / empty tool list | `scripts/sync_science_skills.sh --activate-all`; verify the agent identity has `roles/agentregistry.viewer` (`gcloud projects get-iam-policy $PROJECT_ID`). |
 | EDGAR requests return `403` | SEC blocks generic user agents — set a real company + email in `EDGAR_USER_AGENT`. |

@@ -89,8 +89,16 @@ Expected output:
 
 ```
 ✔ Reasoning Engine: projects/…/locations/europe-west4/reasoningEngines/… (updated …)
+✔ GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false
 ✔ registered in GE as 'BioCompass on Gemini Enterprise'  [ENABLED]
+✔ GE path works: "AGENT OK"        # with --smoke
 ```
+
+`verify.sh` checks four things: the Reasoning Engine exists, the required runtime env var
+(`GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false`) is set, the agent is
+registered in the GE app, and — with `--smoke` — the agent answers **through Gemini Enterprise**
+(same path as the UI) as well as directly through Agent Runtime. A green `--smoke` run means the
+agent will work in the GE UI.
 
 ## Step 5 — Use it in Gemini Enterprise
 
@@ -119,6 +127,7 @@ your app → *Agents* → *Permissions*.
 
 | Symptom | Fix |
 | --- | --- |
+| GE UI says *"I couldn't complete this request. If it needs a file, please attach it in the chat."* | GE's generic error wrapper. Run `scripts/verify.sh biocompass --smoke` — it checks that `GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false` is set on the Reasoning Engine and calls the agent **through Gemini Enterprise**, the same path as the UI. If the env check fails, redeploy with `scripts/deploy.sh biocompass` (the flag is set by `deploy.sh`, `shared/cloudbuild.yaml` and the Terraform module). Root cause: GE forwards the end-user credential and the model call returns `401 UNAUTHENTICATED` without the flag. |
 | `tf-apply`: `Error creating Connection … 403` | IAM propagation for the deployer SA; wait 1–2 min and re-run. |
 | `tf-apply`: BigQuery job `text-embedding-005 not found in <region>` | Choose a region where the model is served (e.g. `europe-west4`, `us-central1`) or pre-create the model. |
 | `deploy-agent`: upload > 8 MB | The step writes a `.gcloudignore` that excludes `docs/ tests/ terraform/`; make sure you didn't add large files under `app/`. |

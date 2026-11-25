@@ -115,7 +115,7 @@ Argus queries primary life-sciences databases (openFDA, ClinicalTrials.gov, ChEM
 Use the shared [`sync_skills_to_registry.py`](../shared/scripts/sync_skills_to_registry.py) script to clone [Google DeepMind Science Skills](https://github.com/google-deepmind/science-skills), package the skills into zip archives, and register/activate them:
 
 ```bash
-# Run from argus-agent/
+# Run from argus-agent/  (or simply: scripts/sync_science_skills.sh from the repository root)
 uv run ../shared/scripts/sync_skills_to_registry.py --project YOUR_PROJECT_ID --location global
 ```
 
@@ -202,6 +202,11 @@ agents-cli eval grade
 
 ## Deploy to Agent Runtime
 
+> [!IMPORTANT]
+> **Recommended path for this repository: follow [DEPLOY.md](DEPLOY.md)** (`scripts/bootstrap.sh` → `scripts/deploy.sh argus` → `scripts/verify.sh argus --smoke`). The scripts run the pipeline below from the repository root and set every required runtime setting.
+>
+> If you deploy manually, you **must** set `GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false` on the Reasoning Engine. Gemini Enterprise forwards the end user's credential when it calls the agent; without this flag model calls fail with `401 UNAUTHENTICATED` and the GE UI shows *"I couldn't complete this request"*. (`agents-cli run` does not reproduce this because your own token is valid for Vertex AI — always verify from GE or with `scripts/verify.sh --smoke`.)
+
 You can deploy the agent directly using `agents-cli deploy`. The CLI will automatically package the agent code in the `app` directory and generate the necessary requirements from `pyproject.toml` and `uv.lock`.
 
 ```bash
@@ -214,7 +219,7 @@ uv run agents-cli deploy \
     --service-name="Argus — Life Sciences M&A Diligence" \
     --deployment-target=agent_runtime \
     --agent-identity \
-    --update-env-vars="EDGAR_USER_AGENT=$EDGAR_USER_AGENT"
+    --update-env-vars="EDGAR_USER_AGENT=$EDGAR_USER_AGENT,GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false"
 ```
 
 ### Grant IAM Roles to the Agent Identity
@@ -260,9 +265,9 @@ For production and CI/CD pipelines, you can provision the Reasoning Engine infra
 
 #### Deploy only (Default):
 ```bash
-# Run from argus-agent/
-gcloud builds submit --config=../shared/cloudbuild.yaml \
-    --substitutions=_TF_STATE_BUCKET="YOUR_STATE_BUCKET_NAME",_ENV_VARS="EDGAR_USER_AGENT=Sample Company Name AdminContact@<sample company domain>.com" \
+# Run from the repository root
+gcloud builds submit . --config=shared/cloudbuild.yaml \
+    --substitutions=_AGENT_DIR="argus-agent",_TF_STATE_BUCKET="YOUR_STATE_BUCKET_NAME",_ENV_VARS="EDGAR_USER_AGENT=Sample Company Name AdminContact@<sample company domain>.com" \
     --project=YOUR_PROJECT_ID
 ```
 
@@ -270,9 +275,9 @@ gcloud builds submit --config=../shared/cloudbuild.yaml \
 To automatically register the agent with Gemini Enterprise, provide your `_GEMINI_ENTERPRISE_APP_ID`:
 
 ```bash
-# Run from argus-agent/
-gcloud builds submit --config=../shared/cloudbuild.yaml \
-    --substitutions=_TF_STATE_BUCKET="YOUR_STATE_BUCKET_NAME",_GEMINI_ENTERPRISE_APP_ID="projects/YOUR_PROJECT_ID/locations/global/collections/default_collection/engines/YOUR_APP_ID",_ENV_VARS="EDGAR_USER_AGENT=Sample Company Name AdminContact@<sample company domain>.com" \
+# Run from the repository root
+gcloud builds submit . --config=shared/cloudbuild.yaml \
+    --substitutions=_AGENT_DIR="argus-agent",_TF_STATE_BUCKET="YOUR_STATE_BUCKET_NAME",_GEMINI_ENTERPRISE_APP_ID="projects/YOUR_PROJECT_ID/locations/global/collections/default_collection/engines/YOUR_APP_ID",_ENV_VARS="EDGAR_USER_AGENT=Sample Company Name AdminContact@<sample company domain>.com" \
     --project=YOUR_PROJECT_ID
 ```
 

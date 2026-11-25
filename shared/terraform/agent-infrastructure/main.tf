@@ -68,6 +68,16 @@ resource "google_vertex_ai_reasoning_engine" "agent" {
         value = "True"
       }
 
+      # Gemini Enterprise forwards the end user's credential when it invokes the
+      # agent. Without this flag the GenAI client (and GCS telemetry uploads) try
+      # to use that token for Vertex AI / GCS and fail with 401 UNAUTHENTICATED,
+      # which GE surfaces as "I couldn't complete this request". Forces the
+      # Agent Identity to be used for all Google Cloud calls.
+      env {
+        name  = "GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES"
+        value = "false"
+      }
+
       env {
         name  = "OTEL_SERVICE_NAME"
         value = var.agent_id

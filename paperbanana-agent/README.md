@@ -139,6 +139,11 @@ The Visualizer picks up the prior figure as edit input (via `_S_PREV_TURN_IMAGE`
 
 ## Deploy to Agent Runtime
 
+> [!IMPORTANT]
+> **Recommended path for this repository: follow [DEPLOY.md](DEPLOY.md)** (`scripts/bootstrap.sh` → `scripts/deploy.sh paperbanana` → `scripts/verify.sh paperbanana --smoke`). The scripts run the pipeline below from the repository root and set every required runtime setting.
+>
+> If you deploy manually, you **must** set `GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false` on the Reasoning Engine. Gemini Enterprise forwards the end user's credential when it calls the agent; without this flag model calls fail with `401 UNAUTHENTICATED` and the GE UI shows *"I couldn't complete this request"*. (`agents-cli run` does not reproduce this because your own token is valid for Vertex AI — always verify from GE or with `scripts/verify.sh --smoke`.)
+
 You can deploy the agent directly using `agents-cli deploy` from this directory. The CLI will automatically package the agent code in the `app` directory and generate the necessary requirements from `pyproject.toml` and `uv.lock`.
 
 ```bash
@@ -146,7 +151,8 @@ uv run agents-cli deploy \
     --project=$PROJECT_ID \
     --region=us-central1 \
     --service-name="PaperBanana on Gemini Enterprise" \
-    --deployment-target=agent_runtime
+    --deployment-target=agent_runtime \
+    --update-env-vars="GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false"
 ```
 
 ### Deploy with Terraform & Cloud Build (Recommended for Production)
@@ -157,29 +163,27 @@ You can trigger the deployment using `gcloud builds submit` pointing to the shar
 
 #### Deploy only:
 ```bash
-# Run from this directory:
-# paperbanana-agent/
+# Run from the repository root
 
-gcloud builds submit --config=../shared/cloudbuild.yaml \
-    --substitutions=_TF_STATE_BUCKET="YOUR_STATE_BUCKET_NAME",_ENV_VARS="GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false" \
+gcloud builds submit . --config=shared/cloudbuild.yaml \
+    --substitutions=_AGENT_DIR="paperbanana-agent",_TF_STATE_BUCKET="YOUR_STATE_BUCKET_NAME",_ENV_VARS="GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false" \
     --project=YOUR_PROJECT_ID
 ```
 
 #### Deploy and Register with Gemini Enterprise:
 ```bash
-# Run from this directory:
-# paperbanana-agent/
+# Run from the repository root
 
-gcloud builds submit --config=../shared/cloudbuild.yaml \
-    --substitutions=_TF_STATE_BUCKET="YOUR_STATE_BUCKET_NAME",_ENV_VARS="GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false",_GEMINI_ENTERPRISE_APP_ID="projects/YOUR_PROJECT_ID/locations/global/collections/default_collection/engines/YOUR_APP_ID" \
+gcloud builds submit . --config=shared/cloudbuild.yaml \
+    --substitutions=_AGENT_DIR="paperbanana-agent",_TF_STATE_BUCKET="YOUR_STATE_BUCKET_NAME",_ENV_VARS="GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false",_GEMINI_ENTERPRISE_APP_ID="projects/YOUR_PROJECT_ID/locations/global/collections/default_collection/engines/YOUR_APP_ID" \
     --project=YOUR_PROJECT_ID
 ```
 
 #### Customizing Environment Variables (Optional):
 To override default environment variables (e.g. set `IMAGE_SIZE=2K` for faster iteration or change the max critic rounds), pass the `_ENV_VARS` substitution (semicolon-separated) to `gcloud builds submit`:
 ```bash
-gcloud builds submit --config=../shared/cloudbuild.yaml \
-    --substitutions=_TF_STATE_BUCKET="YOUR_STATE_BUCKET_NAME",_ENV_VARS="IMAGE_SIZE=2K;MAX_CRITIC_ROUNDS=2;GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false" \
+gcloud builds submit . --config=shared/cloudbuild.yaml \
+    --substitutions=_AGENT_DIR="paperbanana-agent",_TF_STATE_BUCKET="YOUR_STATE_BUCKET_NAME",_ENV_VARS="IMAGE_SIZE=2K;MAX_CRITIC_ROUNDS=2;GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false" \
     --project=YOUR_PROJECT_ID
 ```
 

@@ -71,8 +71,16 @@ Expected:
 
 ```
 ✔ Reasoning Engine: projects/…/reasoningEngines/… (updated …)
+✔ GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false
 ✔ registered in GE as 'PaperBanana on Gemini Enterprise'  [ENABLED]
+✔ GE path works: "AGENT OK"        # with --smoke
 ```
+
+`verify.sh` checks four things: the Reasoning Engine exists, the required runtime env var
+(`GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false`) is set, the agent is
+registered in the GE app, and — with `--smoke` — the agent answers **through Gemini Enterprise**
+(same path as the UI) as well as directly through Agent Runtime. A green `--smoke` run means the
+agent will work in the GE UI.
 
 ## Step 5 — Use it in Gemini Enterprise
 
@@ -101,6 +109,7 @@ GE app → **Agents** → *PaperBanana on Gemini Enterprise*:
 
 | Symptom | Fix |
 | --- | --- |
+| GE UI says *"I couldn't complete this request…"* | GE's generic error wrapper. Run `scripts/verify.sh paperbanana --smoke` — it checks the runtime env var and calls the agent **through Gemini Enterprise** (same path as the UI). If it fails, redeploy with `scripts/deploy.sh paperbanana`. |
 | Figure request times out in GE | Lower `IMAGE_SIZE` to `2K` and `MAX_CRITIC_ROUNDS` to `1–2`; 4K × 3 rounds can exceed 2–3 min. |
 | `403` calling the image model | Confirm the `GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false` env var is present on the Reasoning Engine (it is set by `deploy.sh`) and that the agent identity has `roles/aiplatform.expressUser` (Terraform). |
 | `404 model gemini-3-pro-image` | Request access to the image model in the project. |

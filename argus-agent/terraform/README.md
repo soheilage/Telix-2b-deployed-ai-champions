@@ -75,9 +75,9 @@ Refer to the deployment instructions in the [Pharma on Gemini Enterprise Root RE
 #### Example Cloud Build Command:
 
 ```bash
-# Run from argus-agent/
-gcloud builds submit --config=../shared/cloudbuild.yaml \
-    --substitutions=_TF_STATE_BUCKET="YOUR_STATE_BUCKET_NAME",_ENV_VARS="EDGAR_USER_AGENT=Sample Company Name AdminContact@<sample company domain>.com" \
+# Run from the repository root
+gcloud builds submit . --config=shared/cloudbuild.yaml \
+    --substitutions=_AGENT_DIR="argus-agent",_TF_STATE_BUCKET="YOUR_STATE_BUCKET_NAME",_ENV_VARS="EDGAR_USER_AGENT=Sample Company Name AdminContact@<sample company domain>.com" \
     --project=YOUR_PROJECT_ID
 ```
 
