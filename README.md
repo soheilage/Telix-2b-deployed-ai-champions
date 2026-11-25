@@ -114,6 +114,7 @@ argus-agent/
 | Cloud Build fails in `tf-apply` with `403` | The deployer SA roles were just granted – IAM can take 1–2 min to propagate; re-run. |
 | `deploy-agent` step: *model not found* / `404` on `gemini-3…` | Request access to Gemini 3 models in the project, or override models via `<AGENT>_EXTRA_ENV`. |
 | `register-agent` step fails with `403` | Deployer SA needs `roles/discoveryengine.agentspaceAdmin` (granted by bootstrap) **and** the GE app must be in the same project. |
+| Agent appears in GE but answers *"I couldn't complete this request…"* | This is GE's generic wrapper for any backend error. Check Reasoning Engine logs (command below). The most common cause is `401 UNAUTHENTICATED` on `generate_content`: GE forwards the end-user credential and the GenAI client tries to use it for Vertex AI. `deploy.sh` sets `GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false` on every agent to prevent this — if you deployed by other means, add that env var. Note `agents-cli run` smoke tests do **not** reproduce this because your own token is Vertex-valid. |
 | Agent appears in GE but answers with an error | `scripts/verify.sh <agent> --smoke` and check Reasoning Engine logs for `streaming_agent_run_with_events`. |
 | Argus: *skills search returned nothing* | `scripts/sync_science_skills.sh --activate-all` |
 | Argolis org-policy errors creating buckets / IAM | Argolis projects sometimes restrict `iam.allowedPolicyMemberDomains`; agent identities are `principal://…` and are allowed. Re-run after fixing the policy. |
