@@ -7,7 +7,7 @@ Three production-ready [ADK](https://github.com/google/adk-python) agents, each 
 | Agent | What it does | Deploy guide |
 | --- | --- | --- |
 | [**BioCompass**](biocompass-agent/) | Biomedical literature research: PubMed, Europe PMC, bioRxiv/medRxiv, ClinicalTrials.gov, PubTator3 entity analysis, deep-research pipeline, concept figures, 6 pharma methodology skills (PICO, PRISMA, MoA, …). | [biocompass-agent/DEPLOY.md](biocompass-agent/DEPLOY.md) |
-| [**PaperBanana**](paperbanana-agent/) | Turns a paper section / data / sketch into a publication-quality figure via a plan → stylize → render → critique → refine loop (Gemini + Nano Banana Pro, up to 4K). | [paperbanana-agent/DEPLOY.md](paperbanana-agent/DEPLOY.md) |
+| [**PaperBanana**](paperbanana-agent/) | Turns an **attached paper PDF** into a publication-quality figure via a plan → stylize → render → critique → refine loop (Gemini + Nano Banana Pro, up to 4K). | [paperbanana-agent/DEPLOY.md](paperbanana-agent/DEPLOY.md) |
 | [**Argus**](argus-agent/) | Life-sciences M&A due diligence: quick questions via specialist sub-agents, target screening from a thesis, deep-diligence pipeline producing whitepaper PDFs with charts. Uses SEC EDGAR + Agent Registry Science Skills. | [argus-agent/DEPLOY.md](argus-agent/DEPLOY.md) |
 
 Upstream source: [`soheilage/LifeSciences › applications/pharma-on-gemini-enterprise`](https://github.com/soheilage/LifeSciences/tree/main/applications/pharma-on-gemini-enterprise)

@@ -78,8 +78,12 @@ Expected:
 
 GE app → **Agents** → *PaperBanana on Gemini Enterprise*:
 
-1. Attach a paper PDF (or paste the methods section + a results table).
-2. *"Create a figure summarising the study workflow in a Nature-style layout."*
+> **A paper PDF is required.** PaperBanana is a *paper-to-figure* agent: the planner,
+> stylist and critic all read the attached PDF. Without an attachment it will (by design)
+> ask you to attach one.
+
+1. Attach a research paper PDF in the composer (any open-access trial or methods paper works).
+2. *"Create a publication-style figure of the study design and patient flow described in this paper."*
 3. Follow up: *"Make the colour palette colour-blind safe and enlarge the panel labels."*
    (edit mode keeps the previous image as reference).
 
