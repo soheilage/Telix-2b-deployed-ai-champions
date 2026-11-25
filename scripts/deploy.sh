@@ -49,6 +49,10 @@ case "$AGENT" in
     : "${EDGAR_USER_AGENT:?EDGAR_USER_AGENT must be set in .env for Argus (SEC EDGAR policy)}"
     [[ "$EDGAR_USER_AGENT" == *,* ]] && die "EDGAR_USER_AGENT must not contain commas."
     ENV_VARS="${COMMON_ENV};EDGAR_USER_AGENT=${EDGAR_USER_AGENT};AGENT_REGISTRY_LOCATION=global"
+    # Whitepaper PDFs / charts are stored via ADK's GcsArtifactService. Without
+    # ARTIFACT_BUCKET_NAME the code falls back to the *logs* bucket, leaving the
+    # Terraform-created artifacts bucket unused. Must match terraform/main.tf.
+    ENV_VARS="${ENV_VARS};ARTIFACT_BUCKET_NAME=${ARGUS_ARTIFACT_BUCKET:-${PROJECT_ID}-argus-artifacts}"
     [[ -n "${ARGUS_EXTRA_ENV:-}" ]] && ENV_VARS="${ENV_VARS};${ARGUS_EXTRA_ENV}"
     if [[ "${SKIP_SKILLS_SYNC:-0}" != "1" ]]; then
       info "Argus prerequisite: syncing Science Skills to Agent Registry"

@@ -41,6 +41,7 @@ cp .env.example .env        # skip if you already did this for another agent
 | `GE_APP_ID` | leave empty — detected in Step 2 |
 | **`EDGAR_USER_AGENT`** | **required** — SEC EDGAR policy: `"<Company name> <contact email>"`, no commas |
 | `ARGUS_EXTRA_ENV` | *(optional)* e.g. `ARGUS_SHOW_THOUGHTS=0;ARGUS_MODEL=gemini-3.7-flash` |
+| `ARGUS_ARTIFACT_BUCKET` | *(optional)* bucket for whitepaper PDFs; default `<PROJECT_ID>-argus-artifacts` (must match `terraform/main.tf`) |
 
 Defaults: `ARGUS_MODEL=gemini-3.7-flash`, `ARGUS_IMAGE_MODEL=gemini-3-pro-image`,
 `AGENT_REGISTRY_LOCATION=global` (see [`.env.example`](.env.example)).
@@ -104,7 +105,15 @@ GE app → **Agents** → *Argus — Life Sciences M&A Diligence*:
 - Quick question: *"What is the regulatory status of Insmed's brensocatib in the US and EU?"*
 - Target screening: *"We are a mid-cap oncology company looking for ADC assets in Phase 2+; screen 5 candidates."*
 - Deep diligence: *"Run a full diligence whitepaper on Mersana Therapeutics."* → returns a PDF
-  with charts stored in the `<project>-argus-artifacts` bucket.
+  with charts.
+
+**Where the whitepaper goes.** Argus saves the PDF, charts and infographics with ADK's artifact
+service. End users get them as **downloadable attachments directly in the GE chat reply** — no
+bucket access needed. The persistent copy lands in the Terraform-created
+`<project>-argus-artifacts` bucket (`ARTIFACT_BUCKET_NAME`, set by `deploy.sh`), where admins can
+retrieve past reports: Console → Cloud Storage → `<project>-argus-artifacts`, or
+`gcloud storage ls -r gs://<project>-argus-artifacts/`. Without `ARTIFACT_BUCKET_NAME` the agent
+silently falls back to the logs bucket.
 
 ---
 
