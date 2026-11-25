@@ -30,20 +30,25 @@ check_gcloud_auth
 
 # ---- per-agent runtime environment variables -------------------------------
 # Semicolon-separated KEY=VALUE pairs (no commas – Cloud Build substitution rule).
+#
+# COMMON_ENV applies to every agent: when Gemini Enterprise invokes the agent it
+# forwards the end user's credential; without this flag the GenAI client and the
+# GCS telemetry uploader try to use that token for Vertex AI / GCS and fail with
+# "401 UNAUTHENTICATED". Setting it to false makes them use the Agent Identity.
+COMMON_ENV="GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false"
 case "$AGENT" in
   biocompass)
-    ENV_VARS="${BIOCOMPASS_EXTRA_ENV:-}"
+    ENV_VARS="$COMMON_ENV"
+    [[ -n "${BIOCOMPASS_EXTRA_ENV:-}" ]] && ENV_VARS="${ENV_VARS};${BIOCOMPASS_EXTRA_ENV}"
     ;;
   paperbanana)
-    # Required by the upstream README so the image model can be called with the
-    # agent identity token.
-    ENV_VARS="GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES=false"
+    ENV_VARS="$COMMON_ENV"
     [[ -n "${PAPERBANANA_EXTRA_ENV:-}" ]] && ENV_VARS="${ENV_VARS};${PAPERBANANA_EXTRA_ENV}"
     ;;
   argus)
     : "${EDGAR_USER_AGENT:?EDGAR_USER_AGENT must be set in .env for Argus (SEC EDGAR policy)}"
     [[ "$EDGAR_USER_AGENT" == *,* ]] && die "EDGAR_USER_AGENT must not contain commas."
-    ENV_VARS="EDGAR_USER_AGENT=${EDGAR_USER_AGENT};AGENT_REGISTRY_LOCATION=global"
+    ENV_VARS="${COMMON_ENV};EDGAR_USER_AGENT=${EDGAR_USER_AGENT};AGENT_REGISTRY_LOCATION=global"
     [[ -n "${ARGUS_EXTRA_ENV:-}" ]] && ENV_VARS="${ENV_VARS};${ARGUS_EXTRA_ENV}"
     if [[ "${SKIP_SKILLS_SYNC:-0}" != "1" ]]; then
       info "Argus prerequisite: syncing Science Skills to Agent Registry"
